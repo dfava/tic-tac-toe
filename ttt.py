@@ -76,8 +76,9 @@ therefore, putting boards in sets or using boards as keys to dicts can be "dange
 If the game is over (i.e. someone won or the board is full), return the empty list
 If player A played one less time than player B, then it is player A's turn.
 If player A played the same number of times as B, then it may be player A's or player B's turns (we don't know for sure which).'''
-    if self.is_over():
-      return []
+    # Special case for handling the fact that p1 is the starting player
+    if self.is_empty(): return [self.p1]
+    if self.is_over(): return []
     p1cnt = len([1 for i in range(0,3) for j in range(0,3) if self.b[i][j] == self.p1])
     p2cnt = len([1 for i in range(0,3) for j in range(0,3) if self.b[i][j] == self.p2])
     if p1cnt > p2cnt: return [self.p2]
@@ -91,6 +92,9 @@ If player A played the same number of times as B, then it may be player A's or p
     '''A check for whether the game is over.
 Returns true if the board is full or one of the players won; returns false otherwise.'''
     return self.is_full() or self.who_won() != None
+
+  def is_empty(self):
+    return len(self.get_empty_idxs()) == 9
 
   def is_full(self):
     '''Return true if the board is full.'''

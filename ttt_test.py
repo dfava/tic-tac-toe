@@ -81,7 +81,7 @@ class TttTest(unittest.TestCase):
 
     def test_next_player(self):
       b = ttt.Board()
-      self.assertEqual(b.next_player(), [b.p1, b.p2])
+      self.assertEqual(b.next_player(), [b.p1])
       b[1][1] = b.p1
       self.assertEqual(b.next_player(), [b.p2])
       b[1][0] = b.p2
@@ -105,25 +105,24 @@ class TttTest(unittest.TestCase):
     def test_get_children(self):
       b = ttt.Board()
       bs = b.get_children()
-      self.assertEqual(len(bs), 18)
       answer = [ [['x', ' ', ' '],[' ', ' ', ' '],[' ', ' ', ' ']],
-                 [['o', ' ', ' '],[' ', ' ', ' '],[' ', ' ', ' ']],
+                 #[['o', ' ', ' '],[' ', ' ', ' '],[' ', ' ', ' ']],
                  [[' ', 'x', ' '],[' ', ' ', ' '],[' ', ' ', ' ']],
-                 [[' ', 'o', ' '],[' ', ' ', ' '],[' ', ' ', ' ']],
+                 #[[' ', 'o', ' '],[' ', ' ', ' '],[' ', ' ', ' ']],
                  [[' ', ' ', 'x'],[' ', ' ', ' '],[' ', ' ', ' ']],
-                 [[' ', ' ', 'o'],[' ', ' ', ' '],[' ', ' ', ' ']],
+                 #[[' ', ' ', 'o'],[' ', ' ', ' '],[' ', ' ', ' ']],
                  [[' ', ' ', ' '],['x', ' ', ' '],[' ', ' ', ' ']],
-                 [[' ', ' ', ' '],['o', ' ', ' '],[' ', ' ', ' ']],
+                 #[[' ', ' ', ' '],['o', ' ', ' '],[' ', ' ', ' ']],
                  [[' ', ' ', ' '],[' ', 'x', ' '],[' ', ' ', ' ']],
-                 [[' ', ' ', ' '],[' ', 'o', ' '],[' ', ' ', ' ']],
+                 #[[' ', ' ', ' '],[' ', 'o', ' '],[' ', ' ', ' ']],
                  [[' ', ' ', ' '],[' ', ' ', 'x'],[' ', ' ', ' ']],
-                 [[' ', ' ', ' '],[' ', ' ', 'o'],[' ', ' ', ' ']],
+                 #[[' ', ' ', ' '],[' ', ' ', 'o'],[' ', ' ', ' ']],
                  [[' ', ' ', ' '],[' ', ' ', ' '],['x', ' ', ' ']],
-                 [[' ', ' ', ' '],[' ', ' ', ' '],['o', ' ', ' ']],
+                 #[[' ', ' ', ' '],[' ', ' ', ' '],['o', ' ', ' ']],
                  [[' ', ' ', ' '],[' ', ' ', ' '],[' ', 'x', ' ']],
-                 [[' ', ' ', ' '],[' ', ' ', ' '],[' ', 'o', ' ']],
+                 #[[' ', ' ', ' '],[' ', ' ', ' '],[' ', 'o', ' ']],
                  [[' ', ' ', ' '],[' ', ' ', ' '],[' ', ' ', 'x']],
-                 [[' ', ' ', ' '],[' ', ' ', ' '],[' ', ' ', 'o']],
+                 #[[' ', ' ', ' '],[' ', ' ', ' '],[' ', ' ', 'o']],
               ]
       for idx,b in enumerate(bs):
         self.assertIn(b.b, answer)
@@ -136,16 +135,30 @@ class TttTest(unittest.TestCase):
       self.assertIn(b1, s)
       self.assertIn(b2, s)
 
+    def test_is_empty(self):
+      b = ttt.Board()
+      self.assertTrue(b.is_empty())
+      b[0][1] = b.p1
+      self.assertFalse(b.is_empty())
+
     def test_get_descendants(self):
       bs = ttt.Board().get_descendants()
       for b in bs:
         print(b)
         print()
       print(len(bs))
+      
+      p1 = [b for b in bs if b.who_won() == b.p1]
+      #for b in p1: print(b)
+      print(len(p1))
+
+      p2 = [b for b in bs if b.who_won() == b.p2]
+      #for b in p1: print(b)
+      print(len(p2))
       pass
     
 
 if __name__ == "__main__":
-  test = unittest.TestLoader().loadTestsFromName("ttt_test.TttTest.test_get_descendants")
-  unittest.TextTestRunner().run(test)
-  #unittest.main()
+  #test = unittest.TestLoader().loadTestsFromName("ttt_test.TttTest.test_get_descendants")
+  #unittest.TextTestRunner().run(test)
+  unittest.main()
