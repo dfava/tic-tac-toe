@@ -128,13 +128,21 @@ class TttTest(unittest.TestCase):
       for idx,b in enumerate(bs):
         self.assertIn(b.b, answer)
 
+    def test_equality(self):
+      b1 = ttt.Board()
+      b2 = ttt.Board()
+      s = set([b1])
+      self.assertEqual(b1, b2)
+      self.assertIn(b1, s)
+      self.assertIn(b2, s)
+
     def test_enum_confs(self):
+      print( ttt.Board.enum_confs() )
       pass
-      #print( ttt.Board.enum_confs() )
     
 
 if __name__ == "__main__":
   #test = unittest.TestLoader().loadTestsFromName("ttt_test.TttTest.test_enum_confs")
-  test = unittest.TestLoader().loadTestsFromName("ttt_test.TttTest.test_get_children")
+  test = unittest.TestLoader().loadTestsFromName("ttt_test.TttTest.test_equality")
   unittest.TextTestRunner().run(test)
   #unittest.main()

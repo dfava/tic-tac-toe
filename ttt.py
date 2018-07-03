@@ -9,15 +9,29 @@ class Board():
     '''Enumerate all possible tic-tac-toe board configurations.
 Play starts with player X.'''
     confs = set() 
-    winning_confs = { p1 : set(), p2 : set() }
     to_process = set([Board()]) # Add an empty board to to_process
     while len(to_process) != 0:
       # Remove a conf from to_process
-      b = to_process.pop()
-      confs.add(b)
-      print(b)
-    return (confs, winning_confs)
+      b_to_process = to_process.pop()
+      print(b_to_process)
+      confs.add(b_to_process)
+      bs = b_to_process.get_children()
+      # For every board b in bs not already in confs, add b to to_process
+      for b in bs:
+        print(b in confs)
+    return confs
   
+  def __hash__(self):
+    '''Board hashes take into account the board configuration, the element e, p1, and p2.
+Since lists are not hashable, we convert the board conf to tuples.
+Note that boards are mutable, so their hashes can change over time;
+therefore, putting boards in sets or using boards as keys to dicts can be "dangerous" given that the board can later be modified.'''
+    return hash( (tuple(self.b[0]), tuple(self.b[1]), tuple(self.b[2]), self.e, self.p1, self.p2) )
+
+  def __eq__(self, other):
+    '''Boards are equal if their hashes are equal'''
+    return hash(self) == hash(other)
+
   def __init__(self, e=' ', p1='x', p2='o'):
     '''New empty board'''
     self.e = e
@@ -104,37 +118,9 @@ Returns true if the board is full or one of the players won; returns false other
     assert(0)
 
 
-
-def old():
-  prev_itr_bs = [ Board() ]
-  bs = prev_itr_bs
-  # TODO: This is computing the same configuration more than once
-  # Careful not to compute the same configuration via two different paths
-  for play in [1,2,3,4,5,6,7]:#range(1,10):
-    new_bs = []
-    player = 'X' if play % 2 == 0 else 'O'
-    print(player)
-    for b in prev_itr_bs: 
-      if b.is_over():
-        continue
-      empties = b.get_empty_idxs()
-      for e in empties:
-        nb = Board.new(b)
-        nb[e] = player
-        new_bs.append(nb)
-        print(nb)
-        if nb.is_over(): print("Over!"); input()
-        print()
-    prev_itr_bs = new_bs
-    bs += new_bs
-    #print(bs)
-    #sys.exit(0)
-  return bs
-
-
 def main(argv):
-  print("Hello world")
-  enum_confs()
+  print("ttt")
+  return 0
 
 if __name__ == '__main__':
   sys.exit(main(sys.argv))
