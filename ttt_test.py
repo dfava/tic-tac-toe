@@ -101,7 +101,40 @@ class TttTest(unittest.TestCase):
       self.assertEqual(b.next_player(), [b.p1, b.p2])
       b[2][1] = b.p2
       self.assertEqual(b.next_player(), [])
+
+    def test_get_children(self):
+      b = ttt.Board()
+      bs = b.get_children()
+      self.assertEqual(len(bs), 18)
+      answer = [ [['x', ' ', ' '],[' ', ' ', ' '],[' ', ' ', ' ']],
+                 [['o', ' ', ' '],[' ', ' ', ' '],[' ', ' ', ' ']],
+                 [[' ', 'x', ' '],[' ', ' ', ' '],[' ', ' ', ' ']],
+                 [[' ', 'o', ' '],[' ', ' ', ' '],[' ', ' ', ' ']],
+                 [[' ', ' ', 'x'],[' ', ' ', ' '],[' ', ' ', ' ']],
+                 [[' ', ' ', 'o'],[' ', ' ', ' '],[' ', ' ', ' ']],
+                 [[' ', ' ', ' '],['x', ' ', ' '],[' ', ' ', ' ']],
+                 [[' ', ' ', ' '],['o', ' ', ' '],[' ', ' ', ' ']],
+                 [[' ', ' ', ' '],[' ', 'x', ' '],[' ', ' ', ' ']],
+                 [[' ', ' ', ' '],[' ', 'o', ' '],[' ', ' ', ' ']],
+                 [[' ', ' ', ' '],[' ', ' ', 'x'],[' ', ' ', ' ']],
+                 [[' ', ' ', ' '],[' ', ' ', 'o'],[' ', ' ', ' ']],
+                 [[' ', ' ', ' '],[' ', ' ', ' '],['x', ' ', ' ']],
+                 [[' ', ' ', ' '],[' ', ' ', ' '],['o', ' ', ' ']],
+                 [[' ', ' ', ' '],[' ', ' ', ' '],[' ', 'x', ' ']],
+                 [[' ', ' ', ' '],[' ', ' ', ' '],[' ', 'o', ' ']],
+                 [[' ', ' ', ' '],[' ', ' ', ' '],[' ', ' ', 'x']],
+                 [[' ', ' ', ' '],[' ', ' ', ' '],[' ', ' ', 'o']],
+              ]
+      for idx,b in enumerate(bs):
+        self.assertIn(b.b, answer)
+
+    def test_enum_confs(self):
+      pass
+      #print( ttt.Board.enum_confs() )
     
 
 if __name__ == "__main__":
-  unittest.main()
+  #test = unittest.TestLoader().loadTestsFromName("ttt_test.TttTest.test_enum_confs")
+  test = unittest.TestLoader().loadTestsFromName("ttt_test.TttTest.test_get_children")
+  unittest.TextTestRunner().run(test)
+  #unittest.main()

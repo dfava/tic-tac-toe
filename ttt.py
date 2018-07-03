@@ -3,9 +3,20 @@
 import sys
 import copy
 
-# In general, we'll abreviate the word board by b, so printb stands for "print board"
-
 class Board():
+
+  def enum_confs(p1='x', p2='o'):
+    '''Enumerate all possible tic-tac-toe board configurations.
+Play starts with player X.'''
+    confs = set() 
+    winning_confs = { p1 : set(), p2 : set() }
+    to_process = set([Board()]) # Add an empty board to to_process
+    while len(to_process) != 0:
+      # Remove a conf from to_process
+      b = to_process.pop()
+      confs.add(b)
+      print(b)
+    return (confs, winning_confs)
   
   def __init__(self, e=' ', p1='x', p2='o'):
     '''New empty board'''
@@ -13,6 +24,20 @@ class Board():
     self.p1 = p1
     self.p2 = p2
     self.b = [[e, e, e], [e, e, e], [e, e, e]]
+
+  def get_children(self):
+    '''Return all possible children of a given board configuration.'''
+    players = self.next_player()
+    if players == []:
+      return []
+    children = []
+    idxs = self.get_empty_idxs()
+    for idx in idxs:
+      for p in players:
+        nb = Board.new(self)
+        nb[idx] = p
+        children.append(nb)
+    return children
 
   @classmethod
   def new(cls, b2):
@@ -38,15 +63,16 @@ If player A played the same number of times as B, then it may be player A's or p
     return str(self.b[0]) + '\n' + str(self.b[1]) + '\n' + str(self.b[2])
 
   def is_over(self):
-    '''Return true if the board is full or one of the players won'''
+    '''A check for whether the game is over.
+Returns true if the board is full or one of the players won; returns false otherwise.'''
     return self.is_full() or self.who_won() != None
 
   def is_full(self):
-    '''Return true if the board is full'''
+    '''Return true if the board is full.'''
     return self.get_empty_idxs() == []
 
   def who_won(self):
-    '''Return p if game has been won by a player p, None otherwise'''
+    '''Return p if game has been won by a player p; None otherwise (i.e. no player has won the game)'''
     # Columns
     for c in range(0,3):
       if self.b[0][c] != self.e and (self.b[0][c] == self.b[1][c] == self.b[2][c]): return self.b[0][c]
@@ -78,9 +104,8 @@ If player A played the same number of times as B, then it may be player A's or p
     assert(0)
 
 
-def enum_confs():
-  '''Enumerate all possible tic-tac-toe board configurations.
-Play starts with player X.'''
+
+def old():
   prev_itr_bs = [ Board() ]
   bs = prev_itr_bs
   # TODO: This is computing the same configuration more than once
