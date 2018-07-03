@@ -136,13 +136,16 @@ class TttTest(unittest.TestCase):
       self.assertIn(b1, s)
       self.assertIn(b2, s)
 
-    def test_enum_confs(self):
-      print( ttt.Board.enum_confs() )
+    def test_get_descendants(self):
+      bs = ttt.Board().get_descendants()
+      for b in bs:
+        print(b)
+        print()
+      print(len(bs))
       pass
     
 
 if __name__ == "__main__":
-  #test = unittest.TestLoader().loadTestsFromName("ttt_test.TttTest.test_enum_confs")
-  test = unittest.TestLoader().loadTestsFromName("ttt_test.TttTest.test_equality")
+  test = unittest.TestLoader().loadTestsFromName("ttt_test.TttTest.test_get_descendants")
   unittest.TextTestRunner().run(test)
   #unittest.main()

@@ -1,25 +1,19 @@
 #!/usr/bin/env python3
+__author__  = "Daniel S. Fava"
+__license__ = "License: CC BY 4.0, https://creativecommons.org/licenses/by/4.0/"
+__year__    = "2018"
 
 import sys
 import copy
 
 class Board():
 
+  @classmethod
   def enum_confs(p1='x', p2='o'):
     '''Enumerate all possible tic-tac-toe board configurations.
-Play starts with player X.'''
-    confs = set() 
-    to_process = set([Board()]) # Add an empty board to to_process
-    while len(to_process) != 0:
-      # Remove a conf from to_process
-      b_to_process = to_process.pop()
-      print(b_to_process)
-      confs.add(b_to_process)
-      bs = b_to_process.get_children()
-      # For every board b in bs not already in confs, add b to to_process
-      for b in bs:
-        print(b in confs)
-    return confs
+Play starts with player p1.'''
+    b = Board()
+    return b.get_descendants()
   
   def __hash__(self):
     '''Board hashes take into account the board configuration, the element e, p1, and p2.
@@ -40,7 +34,7 @@ therefore, putting boards in sets or using boards as keys to dicts can be "dange
     self.b = [[e, e, e], [e, e, e], [e, e, e]]
 
   def get_children(self):
-    '''Return all possible children of a given board configuration.'''
+    '''Return all possible children of the given board configuration.'''
     players = self.next_player()
     if players == []:
       return []
@@ -52,6 +46,23 @@ therefore, putting boards in sets or using boards as keys to dicts can be "dange
         nb[idx] = p
         children.append(nb)
     return children
+
+  def get_descendants(self):
+    '''Return all descendants of the given board.'''
+    processed_lst = []  # Keeping a list simply because I like to see elements somewhat in order
+    processed = set() 
+    to_process = [self] # Add current board to "to_process"
+    while len(to_process) != 0:
+      # Remove a conf from to_process
+      b_to_process = to_process.pop()
+      processed.add(b_to_process)
+      processed_lst.append(b_to_process)
+      children = b_to_process.get_children()
+      # For every board b in bs not already in "processed", add b to "to_process"
+      for b in children:
+        if b not in processed:
+          to_process.append(b)
+    return processed_lst
 
   @classmethod
   def new(cls, b2):
