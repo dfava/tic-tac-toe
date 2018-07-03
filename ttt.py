@@ -32,19 +32,18 @@ therefore, putting boards in sets or using boards as keys to dicts can be "dange
     self.p1 = p1
     self.p2 = p2
     self.b = [[e, e, e], [e, e, e], [e, e, e]]
+    self.iteration = 0
 
   def get_children(self):
     '''Return all possible children of the given board configuration.'''
-    players = self.next_player()
-    if players == []:
-      return []
+    player = self.next_player()
+    if player == None: return []
     children = []
     idxs = self.get_empty_idxs()
     for idx in idxs:
-      for p in players:
-        nb = Board.new(self)
-        nb[idx] = p
-        children.append(nb)
+      nb = Board.new(self)
+      nb[idx] = player; nb.iteration += 1
+      children.append(nb)
     return children
 
   def get_descendants(self):
@@ -67,7 +66,8 @@ therefore, putting boards in sets or using boards as keys to dicts can be "dange
   @classmethod
   def new(cls, b2):
     '''New board with the same board configuration as b2'''
-    b = Board(e=b2.e)
+    b = Board(e=b2.e, p1=b2.p1, p2=b2.p2)
+    b.iteration = b2.iteration
     b.b = copy.deepcopy(b2.b)
     return b
 
@@ -77,13 +77,9 @@ If the game is over (i.e. someone won or the board is full), return the empty li
 If player A played one less time than player B, then it is player A's turn.
 If player A played the same number of times as B, then it may be player A's or player B's turns (we don't know for sure which).'''
     # Special case for handling the fact that p1 is the starting player
-    if self.is_empty(): return [self.p1]
-    if self.is_over(): return []
-    p1cnt = len([1 for i in range(0,3) for j in range(0,3) if self.b[i][j] == self.p1])
-    p2cnt = len([1 for i in range(0,3) for j in range(0,3) if self.b[i][j] == self.p2])
-    if p1cnt > p2cnt: return [self.p2]
-    elif p2cnt > p1cnt: return [self.p1]
-    else: return [self.p1, self.p2]
+    if self.is_over(): return None
+    if self.iteration % 2 == 0: return self.p1
+    else: return self.p2
 
   def __str__(self):
     return str(self.b[0]) + '\n' + str(self.b[1]) + '\n' + str(self.b[2])

@@ -81,48 +81,33 @@ class TttTest(unittest.TestCase):
 
     def test_next_player(self):
       b = ttt.Board()
-      self.assertEqual(b.next_player(), [b.p1])
-      b[1][1] = b.p1
-      self.assertEqual(b.next_player(), [b.p2])
-      b[1][0] = b.p2
-      self.assertEqual(b.next_player(), [b.p1, b.p2])
-      b[2][2] = b.p2
-      self.assertEqual(b.next_player(), [b.p1])
-      b[0][0] = b.p2
-      b[2][0] = b.p2
-      self.assertEqual(b.next_player(), [])
-      b[2][0] = b.p1
-      self.assertEqual(b.next_player(), [b.p1])
-      b[0][1] = b.p1
-      self.assertEqual(b.next_player(), [b.p1, b.p2])
-      b[0][2] = b.p2
-      self.assertEqual(b.next_player(), [b.p1])
-      b[1][2] = b.p1
-      self.assertEqual(b.next_player(), [b.p1, b.p2])
-      b[2][1] = b.p2
-      self.assertEqual(b.next_player(), [])
+      self.assertEqual(b.next_player(), b.p1)
+      b[1][1] = b.p1; b.iteration += 1
+      self.assertEqual(b.next_player(), b.p2)
+      b[1][0] = b.p2; b.iteration += 1
+      self.assertEqual(b.next_player(), b.p1)
+      b[2][2] = b.p1; b.iteration += 1
+      self.assertEqual(b.next_player(), b.p2)
+      b[0][0] = b.p2; b.iteration += 1
+      b[2][0] = b.p1; b.iteration += 1
+      self.assertEqual(b.next_player(), b.p2)
+      b[0][1] = b.p2; b.iteration += 1
+      self.assertEqual(b.next_player(), b.p1)
+      b[0][2] = b.p1; b.iteration += 1
+      self.assertEqual(b.next_player(), None)
 
     def test_get_children(self):
       b = ttt.Board()
       bs = b.get_children()
       answer = [ [['x', ' ', ' '],[' ', ' ', ' '],[' ', ' ', ' ']],
-                 #[['o', ' ', ' '],[' ', ' ', ' '],[' ', ' ', ' ']],
                  [[' ', 'x', ' '],[' ', ' ', ' '],[' ', ' ', ' ']],
-                 #[[' ', 'o', ' '],[' ', ' ', ' '],[' ', ' ', ' ']],
                  [[' ', ' ', 'x'],[' ', ' ', ' '],[' ', ' ', ' ']],
-                 #[[' ', ' ', 'o'],[' ', ' ', ' '],[' ', ' ', ' ']],
                  [[' ', ' ', ' '],['x', ' ', ' '],[' ', ' ', ' ']],
-                 #[[' ', ' ', ' '],['o', ' ', ' '],[' ', ' ', ' ']],
                  [[' ', ' ', ' '],[' ', 'x', ' '],[' ', ' ', ' ']],
-                 #[[' ', ' ', ' '],[' ', 'o', ' '],[' ', ' ', ' ']],
                  [[' ', ' ', ' '],[' ', ' ', 'x'],[' ', ' ', ' ']],
-                 #[[' ', ' ', ' '],[' ', ' ', 'o'],[' ', ' ', ' ']],
                  [[' ', ' ', ' '],[' ', ' ', ' '],['x', ' ', ' ']],
-                 #[[' ', ' ', ' '],[' ', ' ', ' '],['o', ' ', ' ']],
                  [[' ', ' ', ' '],[' ', ' ', ' '],[' ', 'x', ' ']],
-                 #[[' ', ' ', ' '],[' ', ' ', ' '],[' ', 'o', ' ']],
                  [[' ', ' ', ' '],[' ', ' ', ' '],[' ', ' ', 'x']],
-                 #[[' ', ' ', ' '],[' ', ' ', ' '],[' ', ' ', 'o']],
               ]
       for idx,b in enumerate(bs):
         self.assertIn(b.b, answer)
@@ -149,11 +134,11 @@ class TttTest(unittest.TestCase):
       print(len(bs))
       
       p1 = [b for b in bs if b.who_won() == b.p1]
-      #for b in p1: print(b)
+      #for b in p1: print(b); print()
       print(len(p1))
 
       p2 = [b for b in bs if b.who_won() == b.p2]
-      #for b in p1: print(b)
+      #for b in p2: print(b); print()
       print(len(p2))
       pass
     
