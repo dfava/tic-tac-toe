@@ -76,7 +76,6 @@ therefore, putting boards in sets or using boards as keys to dicts can be "dange
 If the game is over (i.e. someone won or the board is full), return the empty list
 If player A played one less time than player B, then it is player A's turn.
 If player A played the same number of times as B, then it may be player A's or player B's turns (we don't know for sure which).'''
-    # Special case for handling the fact that p1 is the starting player
     if self.is_over(): return None
     if self.iteration % 2 == 0: return self.p1
     else: return self.p2
