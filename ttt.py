@@ -39,8 +39,15 @@ therefore, putting boards in sets or using boards as keys to dicts can be "dange
     '''Boards are equal if their hashes are equal'''
     return hash(self) == hash(other)
 
+  def __le__(self, other):
+    for idx_r,r in enumerate(self.b):
+      for idx_c,el in enumerate(r):
+        le = el == other[idx_r][idx_c] or el == self.e
+        if not le: return False
+    return True
+
   def play(self, i, j=0):
-    # A bit of a hack here.
+    # A bit of a hack here (of the good kind).
     # Usually we assume play() will be called with two arguments i and j,
     # the first being a row index and the seconds a column index.
     # But, we also want to support calling play() with a tuple (i,j) or list [i,j].

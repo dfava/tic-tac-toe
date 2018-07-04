@@ -117,22 +117,40 @@ class TttTest(unittest.TestCase):
 
     def test_get_descendants(self):
       bs = ttt.Board().get_descendants()
-      for b in bs:
-        print(b)
-        print()
-      print(len(bs))
+      #for b in bs:
+      #  print(b)
+      #  print()
+      #print(len(bs))
+      self.assertEqual(len(bs), 5478)
       
       p1 = [b for b in bs if b.who_won() == b.p1]
       #for b in p1: print(b); print()
-      print(len(p1))
+      #print(len(p1))
+      self.assertEqual(len(p1), 626)
 
       p2 = [b for b in bs if b.who_won() == b.p2]
       #for b in p2: print(b); print()
-      print(len(p2))
-      pass
+      #print(len(p2))
+      self.assertEqual(len(p2), 316)
+
+      cats = [b for b in bs if b.who_won() == None and b.is_over()]
+      #for b in cats: print(b); print()
+      #print(len(cats))
+      self.assertEqual(len(cats), 16)
+
+    def test_le(self):
+      b1 = ttt.Board()
+      b2 = ttt.Board()
+      self.assertTrue(b1 <= b2)
+      self.assertTrue(b2 <= b1)
+      b2=b2.play(1,1)
+      self.assertFalse(b2 <= b1)
+      b1=b1.play(1,1)
+      self.assertTrue(b1 <= b2)
+      self.assertTrue(b2 <= b1)
     
 
 if __name__ == "__main__":
-  #test = unittest.TestLoader().loadTestsFromName("ttt_test.TttTest.test_is_over")
+  #test = unittest.TestLoader().loadTestsFromName("ttt_test.TttTest.test_le")
   #unittest.TextTestRunner().run(test)
   unittest.main()
