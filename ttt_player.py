@@ -2,6 +2,8 @@ __author__  = "Daniel S. Fava"
 __license__ = "License: CC BY 4.0, https://creativecommons.org/licenses/by/4.0/"
 __year__    = "2018"
 
+import random
+
 import ttt
 
 def get_play_from_parent_and_child(p, c):
@@ -47,10 +49,10 @@ Algorithm:
     return play
 
 
-class BPlayer(ttt.AbsPlayer):
+class DPlayer(ttt.AbsPlayer):
   '''
 Play a square (i,j) if the adversary can win on the next move by playing on (i,j),
-else, play according to APlayer.
+else, play randomly.
   '''
 
   def __init__(self, p):
@@ -59,7 +61,7 @@ else, play according to APlayer.
   def play(self,b):
     self.stats = {}
     cs = b.get_children()
-    # Defense first
+    # Must we need to defend now?
     for c in cs:
       gcs = c.get_children() # grand-children
       for gc in gcs:
@@ -67,8 +69,35 @@ else, play according to APlayer.
           # The adversary can win if we play according to c
           # Try to defend
           return get_play_from_parent_and_child(c,gc)
+    return random.choice(b.get_empty_idxs())
 
-    # Now think about attack
+
+class ADPlayer(ttt.AbsPlayer):
+  '''
+Play a square (i,j) if we can win in one move, else,
+play a square (i,j) if the adversary can win on the next move by playing on (i,j), else
+play according to APlayer, which is, play the square that has the largest number of winning descendants.
+  '''
+
+  def __init__(self, p):
+    self.p = p
+
+  def play(self,b):
+    self.stats = {}
+    cs = b.get_children()
+    # Can we win on the next move?
+    for c in cs:
+      if c.who_won() == self.p:
+        return get_play_from_parent_and_child(b,c)
+    # Must we need to defend now?
+    for c in cs:
+      gcs = c.get_children() # grand-children
+      for gc in gcs:
+        if gc.who_won() != None and gc.who_won() != self.p:
+          # The adversary can win if we play according to c
+          # Try to defend
+          return get_play_from_parent_and_child(c,gc)
+    # Otherwise, play on the square with largest number of winning descendants
     for c in cs:
       self.stats[c] = {b.p1 : 0, b.p2 : 0}
       ds = c.get_descendants()
@@ -86,5 +115,7 @@ else, play according to APlayer.
 
 
 if __name__ == "__main__":
-  ap = BPlayer(ttt.Board.default_p1)
+  #ap = APlayer(ttt.Board.default_p1)
+  ap = DPlayer(ttt.Board.default_p1)
+  #ap = ADPlayer(ttt.Board.default_p1)
   ap.play(ttt.Board())

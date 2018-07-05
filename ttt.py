@@ -220,18 +220,18 @@ import ttt_player
 def main(argv):
   print("ttt")
   configs = ["two human players", "one human, one machine", "one machine, one human", "two machines"]
-  config = configs[2]
+  config = configs[3]
   if config == "two human players":
     g = Game(TerminalPlayer(Board.default_p1), TerminalPlayer(Board.default_p2))
     g.start()
   elif config == "one human, one machine":
-    g = Game(TerminalPlayer(Board.default_p1), ttt_player.BPlayer(Board.default_p2))
+    g = Game(TerminalPlayer(Board.default_p1), ttt_player.ADPlayer(Board.default_p2))
     g.start()
   elif config == "one machine, one human":
-    g = Game(ttt_player.BPlayer(Board.default_p1), TerminalPlayer(Board.default_p2))
+    g = Game(ttt_player.ADPlayer(Board.default_p1), TerminalPlayer(Board.default_p2))
     g.start()
   elif config == "two machines":
-    g = Game(ttt_player.BPlayer(Board.default_p1), ttt_player.BPlayer(Board.default_p2))
+    g = Game(ttt_player.ADPlayer(Board.default_p1), ttt_player.DPlayer(Board.default_p2))
     g.start(verbose=True)
   else:
     assert(0)
