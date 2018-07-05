@@ -4,18 +4,22 @@ __license__ = "License: CC BY 4.0, https://creativecommons.org/licenses/by/4.0/"
 __year__    = "2018"
 
 import sys
+import abc
 import copy
 
 class Board():
 
+  default_p1 = 'x'
+  default_p2 = 'o'
+
   @classmethod
-  def enum_confs(p1='x', p2='o'):
+  def enum_confs():
     '''Enumerate all possible tic-tac-toe board configurations.
 Play starts with player p1.'''
     b = Board()
     return b.get_descendants()
 
-  def __init__(self, b=None, e=' ', p1='x', p2='o', it=0):
+  def __init__(self, b=None, e=' ', p1=default_p1, p2=default_p2, it=0):
     '''New board.  If b is None, start with an empty board.
 Does not check for validity of the board; user can pass, for example, a board configuration that does not make sense, or value of it that is not consistent with the passed board configuration.'''
     self.e = e
@@ -148,8 +152,90 @@ Returns true if the board is full or one of the players won; returns false other
     assert(0)
 
 
+class AbsPlayer(metaclass=abc.ABCMeta):
+  @abc.abstractmethod
+  def __init__(self, p):
+    raise NotImplementedError('Must first implement play() before using it')
+
+  @abc.abstractmethod
+  def play(self, b):
+    raise NotImplementedError('Must first implement play() before using it')
+
+class TerminalPlayer(AbsPlayer):
+  def __init__(self, p):
+    self.p = p
+
+  def get_input(self, message):
+    v = -1
+    while v not in [0,1,2]:
+      try:
+        v = int(input(message))
+        if v not in [0,1,2]:
+          raise ValueError()
+      except ValueError as e:
+        sys.stderr.write("Must input one of 0,1,2.\n")
+    return v
+
+  def play(self, b):
+    print(b)
+    print('Player %s' % self.p)
+    r = self.get_input('row: ')
+    c = self.get_input('col: ')
+    return (r,c)
+
+class Game():
+
+  def __init__(self, p1, p2):
+    self.b = Board()
+    self.ps = (p1,p2)
+
+  def start(self, verbose=False):
+    it = 0
+    print(self.b);print()
+    while not self.b.is_over():
+      (r,c) = self.ps[it % 2].play(self.b)
+      try:
+        self.b = self.b.play(r,c)
+        print(self.b);print()
+      except RuntimeWarning as e:
+        print(e)
+        continue
+      it = it + 1
+
+  def __str__(self):
+    string = "%s\n" % self.b
+    if self.b.is_over():
+      winner = self.b.who_won()
+      if winner == None:
+        string += "Cat's game"
+      else:
+        string += "Player %s won" % winner
+    else:
+      string += "Game in progress"
+    return string
+
+
+import ttt_player
+
 def main(argv):
   print("ttt")
+  configs = ["two human players", "one human, one machine", "one machine, one human", "two machines"]
+  config = configs[3]
+  if config == "two human players":
+    g = Game(TerminalPlayer(Board.default_p1), TerminalPlayer(Board.default_p2))
+    g.start()
+  elif config == "one human, one machine":
+    g = Game(TerminalPlayer(Board.default_p1), ttt_player.APlayer(Board.default_p2))
+    g.start()
+  elif config == "one machine, one human":
+    g = Game(ttt_player.APlayer(Board.default_p1), TerminalPlayer(Board.default_p2))
+    g.start()
+  elif config == "two machines":
+    g = Game(ttt_player.APlayer(Board.default_p1), ttt_player.APlayer(Board.default_p2))
+    g.start(verbose=True)
+  else:
+    assert(0)
+  print(g)
   return 0
 
 if __name__ == '__main__':
