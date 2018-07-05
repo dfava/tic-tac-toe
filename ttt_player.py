@@ -30,21 +30,21 @@ Algorithm:
     self.p = p
 
   def play(self,b):
-    self.stats = {}
+    stats = {}
     cs = b.get_children()
     for c in cs:
-      self.stats[c] = {b.p1 : 0, b.p2 : 0}
+      stats[c] = {b.p1 : 0, b.p2 : 0}
       ds = c.get_descendants()
       for d in ds:
         w = d.who_won()
         if w != None:
-          self.stats[c][w] += 1
+          stats[c][w] += 1
     best_score = -1
     best_board = None
-    for el in self.stats:
-      if self.stats[el][self.p] > best_score:
+    for el in stats:
+      if stats[el][self.p] > best_score:
         best_board = el
-        best_score = self.stats[el][self.p]
+        best_score = stats[el][self.p]
     play = get_play_from_parent_and_child(b,best_board)
     return play
 
@@ -59,7 +59,6 @@ else, play randomly.
     self.p = p
 
   def play(self,b):
-    self.stats = {}
     cs = b.get_children()
     # Must we need to defend now?
     for c in cs:
@@ -83,7 +82,7 @@ play according to APlayer, which is, play the square that has the largest number
     self.p = p
 
   def play(self,b):
-    self.stats = {}
+    stats = {}
     cs = b.get_children()
     # Can we win on the next move?
     for c in cs:
@@ -99,18 +98,16 @@ play according to APlayer, which is, play the square that has the largest number
           return get_play_from_parent_and_child(c,gc)
     # Otherwise, play on the square with largest number of winning descendants
     for c in cs:
-      self.stats[c] = {b.p1 : 0, b.p2 : 0}
+      stats[c] = {b.p1 : 0, b.p2 : 0, None : 0}
       ds = c.get_descendants()
       for d in ds:
-        w = d.who_won()
-        if w != None:
-          self.stats[c][w] += 1
+        stats[c][d.who_won()] += 1
     best_score = -1
     best_board = None
-    for el in self.stats:
-      if self.stats[el][self.p] > best_score:
+    for el in stats:
+      if stats[el][self.p] > best_score:
         best_board = el
-        best_score = self.stats[el][self.p]
+        best_score = stats[el][self.p]
     return get_play_from_parent_and_child(b,best_board)
 
 
