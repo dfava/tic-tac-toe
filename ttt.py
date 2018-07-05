@@ -191,12 +191,12 @@ class Game():
 
   def start(self, verbose=False):
     it = 0
-    print(self.b);print()
+    if verbose: print(self.b);print()
     while not self.b.is_over():
       (r,c) = self.ps[it % 2].play(self.b)
       try:
         self.b = self.b.play(r,c)
-        print(self.b);print()
+        if verbose: print(self.b);print()
       except RuntimeWarning as e:
         print(e)
         continue
@@ -220,18 +220,18 @@ import ttt_player
 def main(argv):
   print("ttt")
   configs = ["two human players", "one human, one machine", "one machine, one human", "two machines"]
-  config = configs[3]
+  config = configs[2]
   if config == "two human players":
     g = Game(TerminalPlayer(Board.default_p1), TerminalPlayer(Board.default_p2))
     g.start()
   elif config == "one human, one machine":
-    g = Game(TerminalPlayer(Board.default_p1), ttt_player.APlayer(Board.default_p2))
+    g = Game(TerminalPlayer(Board.default_p1), ttt_player.BPlayer(Board.default_p2))
     g.start()
   elif config == "one machine, one human":
-    g = Game(ttt_player.APlayer(Board.default_p1), TerminalPlayer(Board.default_p2))
+    g = Game(ttt_player.BPlayer(Board.default_p1), TerminalPlayer(Board.default_p2))
     g.start()
   elif config == "two machines":
-    g = Game(ttt_player.APlayer(Board.default_p1), ttt_player.APlayer(Board.default_p2))
+    g = Game(ttt_player.BPlayer(Board.default_p1), ttt_player.BPlayer(Board.default_p2))
     g.start(verbose=True)
   else:
     assert(0)
