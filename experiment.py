@@ -17,6 +17,10 @@ def main(argv):
     (ttt_player.DPlayer(ttt.Board.default_p1),  ttt_player.ADPlayer(ttt.Board.default_p2)),
     (ttt_player.DPlayer(ttt.Board.default_p1),  ttt_player.DPlayer(ttt.Board.default_p2)),
   )
+  configs= (
+    (ttt_player.DRPlayer(ttt.Board.default_p1,params={'dr':0.5}), ttt_player.DRPlayer(ttt.Board.default_p2)),
+    (ttt_player.DRPlayer(ttt.Board.default_p1), ttt_player.DRPlayer(ttt.Board.default_p2,params={'dr':0.5})),
+  )
 
   res = []
   for idx,config in enumerate(configs):

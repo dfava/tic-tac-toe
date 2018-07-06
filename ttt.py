@@ -32,12 +32,8 @@ Does not check for validity of the board; user can pass, for example, a board co
     self.it = it # Iteration of the game
 
   def __hash__(self):
-    '''Board hashes take into account the board configuration, the element e, p1, and p2.
-Since lists are not hashable, we convert the board conf to tuples.
-Note that boards are mutable, so their hashes can change over time;
-therefore, putting boards in sets or using boards as keys to dicts can be "dangerous" given that the board can later be modified.'''
-    return hash( (tuple(self.b[0]), tuple(self.b[1]), tuple(self.b[2]),\
-                  self.e, self.p1, self.p2, self.it) )
+    map_val = {self.e : '0', self.p1 : '1', self.p2 : '2'}
+    return int('1' + ''.join([map_val[el] for r in self.b for el in r]))
 
   def __eq__(self, other):
     '''Boards are equal if their hashes are equal'''

@@ -120,6 +120,7 @@ play according to APlayer, which is, play the square that has the largest number
     return get_play_from_parent_and_child(b,best_board)
 
 class DRPlayer(ttt.AbsPlayer):
+  '''Reinforcement learning with discounted reward.'''
 
   name = "Discounted reward player"
   params = { 'dr': (lambda v: float(v) if float(v) > 0 and float(v) <= 1 else None, 'Choose a discount reward rate in (0,1]: ', 'Invalid rate.  Must be greater than 0 and less then or equal to 1.  Try again.'), }
@@ -129,6 +130,7 @@ class DRPlayer(ttt.AbsPlayer):
     if params == None: # If no parameters are passed in, initialize to default parameters
       self.params = { 'dr' : 1 } # Discount rate
     else: self.params = params
+    self.rewards = {}
 
   def play(self, b):
     best_b = None
@@ -143,6 +145,9 @@ class DRPlayer(ttt.AbsPlayer):
     return get_play_from_parent_and_child(b,best_b)
 
   def compute_reward(self, b):
+    try: return self.rewards[b]  # Try to return a precomputed reward
+    except KeyError: pass        # if reward has not been pre-computed, then compute it
+
     if b.is_over():
       w = b.who_won()
       if w == None: return 0
@@ -152,7 +157,8 @@ class DRPlayer(ttt.AbsPlayer):
     cs = b.get_children()
     for c in cs:
       reward += self.compute_reward(c)
-    return self.params['dr'] * reward
+    self.rewards[b] = self.params['dr'] * reward
+    return self.rewards[b]
 
 
 if __name__ == "__main__":
