@@ -151,10 +151,17 @@ class TttTest(unittest.TestCase):
 
     def test_get_input(self):
       options = (
-          (lambda v: int(v) in [0,1,2], 'Player 1: ', 'Value must be in [0,1,2]'),
-          )
+         {'valfun' : lambda v: int(v) if int(v) in [0,1,2] else int('raise value error'),
+          'def' : None,
+          'msg' : 'Player 1: ',
+          'errmsg' : 'Value must be in [0,1,2]'},
+         {'valfun' : lambda v: float(v),
+          'def' : -1,
+          'msg' : 'Choose a floating point number as reward for loosing [%.3f]: ',
+          'errmsg' : 'Invalid reward.  Must be a number.  Try again.'},
+        )
       for o in options:
-        ttt.get_input(o[0],o[1],o[2])
+        ttt.get_input(o['valfun'], o['def'], o['msg'], o['errmsg'])
     
 
 if __name__ == "__main__":

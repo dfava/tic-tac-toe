@@ -160,23 +160,25 @@ class AbsPlayer(metaclass=abc.ABCMeta):
     raise NotImplementedError('Must first implement play() before using it')
 
 
-def get_input(validate, message, err_message):
+def get_input(validate, default, message, err_message):
   '''Read inputs from the user:
 validate: a function that takes a string and attempts to transform it into a value in an expected type, and then check if the value is in an expected range.  If so, return the transformed/validated value
 message: a message to prompt the user with
 err_message: an error message when validate() fails on an input
     '''
+  if default != None:
+    message = message % default
   while True:
-    try: val_v = validate(input(message))
-    except ValueError: print(err_message); continue
-    if val_v == None:
-      print(err_message)
-      continue
-    return val_v
+    val_v = input(message)
+    if val_v == '' and default != None: return default # User chose default
+    try:
+      return validate(val_v) 
+    except ValueError:
+      print(err_message);
 
 class TerminalPlayer(AbsPlayer):
   name = "Human player"
-  validate_func = lambda v: int(v) if int(v) in [0,1,2] else None
+  validate_func = lambda v: int(v) if int(v) in [0,1,2] else int('raise value error')
   validate_err_msg = 'Invalid play. Value must be in [0,1,2]. Try again.'
 
   def __init__(self, p, params=None):
@@ -186,8 +188,8 @@ class TerminalPlayer(AbsPlayer):
   def play(self, b):
     print(b)
     print('Player %s' % self.p)
-    r = get_input(TerminalPlayer.validate_func, 'row: ', TerminalPlayer.validate_err_msg)
-    c = get_input(TerminalPlayer.validate_func, 'col: ', TerminalPlayer.validate_err_msg)
+    r = get_input(TerminalPlayer.validate_func, None, 'row: ', TerminalPlayer.validate_err_msg)
+    c = get_input(TerminalPlayer.validate_func, None, 'col: ', TerminalPlayer.validate_err_msg)
     return (r,c)
 
 class Game():
@@ -230,22 +232,24 @@ def main(argv):
               ttt_player.DPlayer, 
               ttt_player.ADPlayer,
               ttt_player.DRPlayer )
-  validate_func = lambda v: int(v) if int(v) in range(0,len(options)) else None
-  err_msg = "Invalid player.  Must be a number from 0 to %d. Try again." % (len(options)-1)
+  validate_func = lambda v: int(v) if int(v) in range(0,len(options)) else int('raise value error')
   for idx,o in enumerate(options):
     print("%d %s" % (idx, o.name))
   p_class = []
   p_params = []
   for idx in range(0,2):
-    p_class.append(options[get_input(validate_func, "Select player %d: " % (idx+1), err_msg)])
+    p_class.append(options[get_input(validate_func, None, "Select player %d: " % (idx+1), 
+        "Invalid player.  Must be a number from 0 to %d. Try again." % (len(options)-1))])
     # Prompt user for his given player's parameters.  Some player don't have parameters, some do.
     try:
       params = {} 
       for param in p_class[idx].params:
-        func = p_class[idx].params[param][0]
-        msg  = p_class[idx].params[param][1]
-        err_msg = p_class[idx].params[param][2]
-        params[param] = get_input(func, msg, err_msg)
+        params[param] = get_input(
+            p_class[idx].params[param]['valfun'],
+            p_class[idx].params[param]['def'],
+            '  ' + p_class[idx].params[param]['msg'],
+            p_class[idx].params[param]['errmsg'],
+            )
     except AttributeError:
       params = None # Player does not have parameters
     p_params.append(params)

@@ -1,6 +1,6 @@
-__author__  = "Daniel S. Fava"
-__license__ = "License: CC BY 4.0, https://creativecommons.org/licenses/by/4.0/"
-__year__    = "2018"
+__author__ ="Daniel S. Fava"
+__license__="License: CC BY 4.0, https://creativecommons.org/licenses/by/4.0/"
+__year__   ="2018"
 
 import random
 
@@ -20,10 +20,10 @@ Algorithm:
    For each child c of b,
      get all descendants of c
      add the number of descendatns of c that are winner
-   Pick the child c that yields the largest number of winners.
+   Pick the child c that yields the largest fraction of winners.
 
- This player works OK,
- the obvious issue is that it does not play defensively when it is about to lose.
+This player works OK,  the obvious issue is that
+the player does not play defensively when it is about to lose.
   '''
 
   name = "Attack only player"
@@ -36,13 +36,15 @@ Algorithm:
     stats = {}
     cs = b.get_children()
     for c in cs:
-      stats[c] = {b.p1 : 0, b.p2 : 0}
+      stats[c] = {b.p1 : 0.0, b.p2 : 0.0, None : 0.0}
       ds = c.get_descendants()
       for d in ds:
-        w = d.who_won()
-        if w != None:
-          stats[c][w] += 1
-    best_score = -1
+        stats[c][d.who_won()] += 1
+      total = stats[c][None] + stats[c][b.p1] + stats[c][b.p2]
+      stats[c][None] = stats[c][None] / total
+      stats[c][b.p1] = stats[c][b.p1] / total
+      stats[c][b.p2] = stats[c][b.p2] / total
+    best_score = -float("inf")
     best_board = None
     for el in stats:
       if stats[el][self.p] > best_score:
@@ -54,7 +56,7 @@ Algorithm:
 
 class DPlayer(ttt.AbsPlayer):
   '''
-Play a square (i,j) if the adversary can win on the next move by playing on (i,j),
+Play (i,j) if the adversary can win on the next move by playing on (i,j),
 else, play randomly.
   '''
 
@@ -80,8 +82,9 @@ else, play randomly.
 class ADPlayer(ttt.AbsPlayer):
   '''
 Play a square (i,j) if we can win in one move, else,
-play a square (i,j) if the adversary can win on the next move by playing on (i,j), else
-play according to APlayer, which is, play the square that has the largest number of winning descendants.
+play (i,j) if the adversary can win on the next move by playing on (i,j), else
+play according to APlayer, which means, play the square that has
+the largest number of winning descendants.
   '''
 
   name = "Attack and defend player"
@@ -105,13 +108,17 @@ play according to APlayer, which is, play the square that has the largest number
           # The adversary can win if we play according to c
           # Try to defend
           return get_play_from_parent_and_child(c,gc)
-    # Otherwise, play on the square with largest number of winning descendants
+    # Otherwise, play on the square with largest fraction of winning descendants
     for c in cs:
-      stats[c] = {b.p1 : 0, b.p2 : 0, None : 0}
+      stats[c] = {b.p1 : 0.0, b.p2 : 0.0, None : 0.0}
       ds = c.get_descendants()
       for d in ds:
         stats[c][d.who_won()] += 1
-    best_score = -1
+      total = stats[c][None] + stats[c][b.p1] + stats[c][b.p2]
+      stats[c][None] = stats[c][None] / total
+      stats[c][b.p1] = stats[c][b.p1] / total
+      stats[c][b.p2] = stats[c][b.p2] / total
+    best_score = -float("inf")
     best_board = None
     for el in stats:
       if stats[el][self.p] > best_score:
@@ -120,16 +127,45 @@ play according to APlayer, which is, play the square that has the largest number
     return get_play_from_parent_and_child(b,best_board)
 
 class DRPlayer(ttt.AbsPlayer):
-  '''Reinforcement learning with discounted reward.'''
+  '''Applies discount on future rewards for loss/tie/win.'''
 
   name = "Discounted reward player"
-  params = { 'dr': (lambda v: float(v) if float(v) > 0 and float(v) <= 1 else None, 'Choose a discount reward rate in (0,1]: ', 'Invalid rate.  Must be greater than 0 and less then or equal to 1.  Try again.'), }
 
-  def __init__(self, p, params=None):
+  # Default parameters
+  # dr -> discounted return rate
+  # win -> reward for winning
+  # tie -> reward for tie
+  # los -> reward for loosing
+  params = {'dr': 
+              {'valfun' : lambda v: float(v) if float(v) > 0 and float(v) <= 1 else int('raise value error'),
+               'def' : 0.96,
+               'msg' : 'Choose a discount reward rate in (0,1], default %.2f: ',
+               'errmsg' : 'Invalid rate.  Must be greater than 0 and less then or equal to 1.  Try again.'},
+            'win':
+              {'valfun' : lambda v: float(v),
+               'def' : 1,
+               'msg' : 'Choose a floating point number as reward for winning, default %.2f: ',
+               'errmsg' : 'Invalid reward.  Must be a number.  Try again.'},
+            'tie':
+              {'valfun' : lambda v: float(v),
+               'def' : 0,
+               'msg' : 'Choose a floating point number as reward for tie, default %.2f: ',
+               'errmsg' : 'Invalid reward.  Must be a number.  Try again.'},
+            'los':
+              {'valfun' : lambda v: float(v),
+               'def' : -1,
+               'msg' : 'Choose a floating point number as reward for loosing, default %.2f: ',
+               'errmsg' : 'Invalid reward.  Must be a number.  Try again.'},
+            }
+
+  def __init__(self, p, params={}):
     self.p = p
-    if params == None: # If no parameters are passed in, initialize to default parameters
-      self.params = { 'dr' : 1 } # Discount rate
-    else: self.params = params
+    self.params = {}
+    for param in DRPlayer.params:
+      self.params[param] = DRPlayer.params[param]['def'] # Set params to default
+    # If parameters have been passed to constructure, then override the parameter here
+    for param in params:
+      self.params[param] = params[param]
     self.rewards = {}
 
   def play(self, b):
@@ -146,17 +182,18 @@ class DRPlayer(ttt.AbsPlayer):
 
   def compute_reward(self, b):
     try: return self.rewards[b]  # Try to return a precomputed reward
-    except KeyError: pass        # if reward has not been pre-computed, then compute it
+    except KeyError: pass # if reward has not been pre-computed, compute it..
 
     if b.is_over():
       w = b.who_won()
-      if w == None: return 0
-      elif w == self.p: return 1
-      else: return -1
-    reward = 0
+      if w == None: return self.params['tie']
+      elif w == self.p: return self.params['win']
+      else: return self.params['los']
     cs = b.get_children()
+    reward = 0.0;
     for c in cs:
       reward += self.compute_reward(c)
+    reward = reward / len(cs) # reward as the average of children's reward
     self.rewards[b] = self.params['dr'] * reward
     return self.rewards[b]
 
