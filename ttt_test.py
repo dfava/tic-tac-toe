@@ -148,9 +148,16 @@ class TttTest(unittest.TestCase):
       b1=b1.play(1,1)
       self.assertTrue(b1 <= b2)
       self.assertTrue(b2 <= b1)
+
+    def test_get_input(self):
+      options = (
+          (lambda v: int(v) in [0,1,2], 'Player 1: ', 'Value must be in [0,1,2]'),
+          )
+      for o in options:
+        ttt.get_input(o[0],o[1],o[2])
     
 
 if __name__ == "__main__":
-  #test = unittest.TestLoader().loadTestsFromName("ttt_test.TttTest.test_le")
-  #unittest.TextTestRunner().run(test)
-  unittest.main()
+  test = unittest.TestLoader().loadTestsFromName("ttt_test.TttTest.test_get_input")
+  unittest.TextTestRunner().run(test)
+  #unittest.main()

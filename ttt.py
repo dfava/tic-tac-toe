@@ -156,7 +156,7 @@ class AbsPlayer(metaclass=abc.ABCMeta):
   name = "Abstract player"
 
   @abc.abstractmethod
-  def __init__(self, p):
+  def __init__(self, p, params):
     raise NotImplementedError('Must first implement play() before using it')
 
   @abc.abstractmethod
@@ -164,28 +164,34 @@ class AbsPlayer(metaclass=abc.ABCMeta):
     raise NotImplementedError('Must first implement play() before using it')
 
 
-def get_input(values, message):
-    v = None
-    while v not in values:
-      try:
-        v = int(input(message))
-        if v not in values:
-          raise ValueError()
-      except ValueError as e:
-        sys.stderr.write("Must input one of %s\n" % values)
-    return v
+def get_input(validate, message, err_message):
+  '''Read inputs from the user:
+validate: a function that takes a string and attempts to transform it into a value in an expected type, and then check if the value is in an expected range.  If so, return the transformed/validated value
+message: a message to prompt the user with
+err_message: an error message when validate() fails on an input
+    '''
+  while True:
+    try: val_v = validate(input(message))
+    except ValueError: print(err_message); continue
+    if val_v == None:
+      print(err_message)
+      continue
+    return val_v
 
 class TerminalPlayer(AbsPlayer):
   name = "Human player"
+  validate_func = lambda v: int(v) if int(v) in [0,1,2] else None
+  validate_err_msg = 'Invalid play. Value must be in [0,1,2]. Try again.'
 
-  def __init__(self, p):
+  def __init__(self, p, params=None):
     self.p = p
+    if params != None: raise ValueError("Player does not take parameters.")
 
   def play(self, b):
     print(b)
     print('Player %s' % self.p)
-    r = get_input([0,1,2], 'row: ')
-    c = get_input([0,1,2], 'col: ')
+    r = get_input(TerminalPlayer.validate_func, 'row: ', TerminalPlayer.validate_err_msg)
+    c = get_input(TerminalPlayer.validate_func, 'col: ', TerminalPlayer.validate_err_msg)
     return (r,c)
 
 class Game():
@@ -228,12 +234,26 @@ def main(argv):
               ttt_player.DPlayer, 
               ttt_player.ADPlayer,
               ttt_player.DRPlayer )
+  validate_func = lambda v: int(v) if int(v) in range(0,len(options)) else None
+  err_msg = "Invalid player.  Must be a number from 0 to %d. Try again." % (len(options)-1)
   for idx,o in enumerate(options):
     print("%d %s" % (idx, o.name))
   p_class = []
+  p_params = []
   for idx in range(0,2):
-    p_class.append(options[get_input(list(range(0,len(options))), "Select player %d: " % (idx+1))])
-  g = Game(p_class[0](Board.default_p1), p_class[1](Board.default_p2))
+    p_class.append(options[get_input(validate_func, "Select player %d: " % (idx+1), err_msg)])
+    # Prompt user for his given player's parameters.  Some player don't have parameters, some do.
+    try:
+      params = {} 
+      for param in p_class[idx].params:
+        func = p_class[idx].params[param][0]
+        msg  = p_class[idx].params[param][1]
+        err_msg = p_class[idx].params[param][2]
+        params[param] = get_input(func, msg, err_msg)
+    except AttributeError:
+      params = None # Player does not have parameters
+    p_params.append(params)
+  g = Game(p_class[0](Board.default_p1, params=p_params[0]), p_class[1](Board.default_p2, params=p_params[1]))
   # If both players are machines, we want verbose==True so that
   # we get board configurations printed to stdout
   verb = p_class[0] != TerminalPlayer and p_class[1] != TerminalPlayer

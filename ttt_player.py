@@ -28,8 +28,9 @@ Algorithm:
 
   name = "Attack only player"
 
-  def __init__(self, p):
+  def __init__(self, p, params=None):
     self.p = p
+    if params != None: raise ValueError("Player does not take parameters.")
 
   def play(self,b):
     stats = {}
@@ -59,8 +60,9 @@ else, play randomly.
 
   name = "Defend player, otherwise random"
 
-  def __init__(self, p):
+  def __init__(self, p, params=None):
     self.p = p
+    if params != None: raise ValueError("Player does not take parameters.")
 
   def play(self,b):
     cs = b.get_children()
@@ -84,8 +86,9 @@ play according to APlayer, which is, play the square that has the largest number
 
   name = "Attack and defend player"
 
-  def __init__(self, p):
+  def __init__(self, p, params=None):
     self.p = p
+    if params != None: raise ValueError("Player does not take parameters.")
 
   def play(self,b):
     stats = {}
@@ -119,10 +122,13 @@ play according to APlayer, which is, play the square that has the largest number
 class DRPlayer(ttt.AbsPlayer):
 
   name = "Discounted reward player"
+  params = { 'dr': (lambda v: float(v) if float(v) > 0 and float(v) <= 1 else None, 'Choose a discount reward rate in (0,1]: ', 'Invalid rate.  Must be greater than 0 and less then or equal to 1.  Try again.'), }
 
-  def __init__(self, p, discount_rate=1):
+  def __init__(self, p, params=None):
     self.p = p
-    self.dr = discount_rate
+    if params == None: # If no parameters are passed in, initialize to default parameters
+      self.params = { 'dr' : 1 } # Discount rate
+    else: self.params = params
 
   def play(self, b):
     best_b = None
@@ -146,7 +152,7 @@ class DRPlayer(ttt.AbsPlayer):
     cs = b.get_children()
     for c in cs:
       reward += self.compute_reward(c)
-    return self.dr * reward
+    return self.params['dr'] * reward
 
 
 if __name__ == "__main__":
