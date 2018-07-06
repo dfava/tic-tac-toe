@@ -197,6 +197,12 @@ class DRPlayer(ttt.AbsPlayer):
     self.rewards[b] = self.params['dr'] * reward
     return self.rewards[b]
 
+# TODO:
+# Idea for a new player: learn the win, tie, los parameters
+# Idea for another player:
+#   don't simulate the games, learn from playing.
+#   So the player's performance starts poor,
+#   and improves from playing against others.
 
 if __name__ == "__main__":
   #ap = APlayer(ttt.Board.default_p1)
