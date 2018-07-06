@@ -26,6 +26,8 @@ Algorithm:
  the obvious issue is that it does not play defensively when it is about to lose.
   '''
 
+  name = "Attack only player"
+
   def __init__(self, p):
     self.p = p
 
@@ -55,6 +57,8 @@ Play a square (i,j) if the adversary can win on the next move by playing on (i,j
 else, play randomly.
   '''
 
+  name = "Defend player, otherwise random"
+
   def __init__(self, p):
     self.p = p
 
@@ -77,6 +81,8 @@ Play a square (i,j) if we can win in one move, else,
 play a square (i,j) if the adversary can win on the next move by playing on (i,j), else
 play according to APlayer, which is, play the square that has the largest number of winning descendants.
   '''
+
+  name = "Attack and defend player"
 
   def __init__(self, p):
     self.p = p
@@ -110,9 +116,42 @@ play according to APlayer, which is, play the square that has the largest number
         best_score = stats[el][self.p]
     return get_play_from_parent_and_child(b,best_board)
 
+class DRPlayer(ttt.AbsPlayer):
+
+  name = "Discounted reward player"
+
+  def __init__(self, p, discount_rate=1):
+    self.p = p
+    self.dr = discount_rate
+
+  def play(self, b):
+    best_b = None
+    best_reward = -float("inf")
+    cs = b.get_children()
+    for c in cs:
+      tmp = self.compute_reward(c)
+      if best_reward < tmp:
+        best_reward = tmp
+        best_b = c
+    assert(best_b != None)
+    return get_play_from_parent_and_child(b,best_b)
+
+  def compute_reward(self, b):
+    if b.is_over():
+      w = b.who_won()
+      if w == None: return 0
+      elif w == self.p: return 1
+      else: return -1
+    reward = 0
+    cs = b.get_children()
+    for c in cs:
+      reward += self.compute_reward(c)
+    return self.dr * reward
+
 
 if __name__ == "__main__":
   #ap = APlayer(ttt.Board.default_p1)
-  ap = DPlayer(ttt.Board.default_p1)
+  #ap = DPlayer(ttt.Board.default_p1)
   #ap = ADPlayer(ttt.Board.default_p1)
+  ap = DRPlayer(ttt.Board.default_p1)
   ap.play(ttt.Board())

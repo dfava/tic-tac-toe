@@ -153,6 +153,8 @@ Returns true if the board is full or one of the players won; returns false other
 
 
 class AbsPlayer(metaclass=abc.ABCMeta):
+  name = "Abstract player"
+
   @abc.abstractmethod
   def __init__(self, p):
     raise NotImplementedError('Must first implement play() before using it')
@@ -161,26 +163,29 @@ class AbsPlayer(metaclass=abc.ABCMeta):
   def play(self, b):
     raise NotImplementedError('Must first implement play() before using it')
 
-class TerminalPlayer(AbsPlayer):
-  def __init__(self, p):
-    self.p = p
 
-  def get_input(self, message):
-    v = -1
-    while v not in [0,1,2]:
+def get_input(values, message):
+    v = None
+    while v not in values:
       try:
         v = int(input(message))
-        if v not in [0,1,2]:
+        if v not in values:
           raise ValueError()
       except ValueError as e:
-        sys.stderr.write("Must input one of 0,1,2.\n")
+        sys.stderr.write("Must input one of %s\n" % values)
     return v
+
+class TerminalPlayer(AbsPlayer):
+  name = "Human player"
+
+  def __init__(self, p):
+    self.p = p
 
   def play(self, b):
     print(b)
     print('Player %s' % self.p)
-    r = self.get_input('row: ')
-    c = self.get_input('col: ')
+    r = get_input([0,1,2], 'row: ')
+    c = get_input([0,1,2], 'col: ')
     return (r,c)
 
 class Game():
@@ -218,23 +223,21 @@ class Game():
 import ttt_player
 
 def main(argv):
-  print("ttt")
-  configs = ["two human players", "one human, one machine", "one machine, one human", "two machines"]
-  config = configs[3]
-  if config == "two human players":
-    g = Game(TerminalPlayer(Board.default_p1), TerminalPlayer(Board.default_p2))
-    g.start()
-  elif config == "one human, one machine":
-    g = Game(TerminalPlayer(Board.default_p1), ttt_player.ADPlayer(Board.default_p2))
-    g.start()
-  elif config == "one machine, one human":
-    g = Game(ttt_player.ADPlayer(Board.default_p1), TerminalPlayer(Board.default_p2))
-    g.start()
-  elif config == "two machines":
-    g = Game(ttt_player.ADPlayer(Board.default_p1), ttt_player.DPlayer(Board.default_p2))
-    g.start(verbose=True)
-  else:
-    assert(0)
+  options = ( TerminalPlayer,
+              ttt_player.APlayer, 
+              ttt_player.DPlayer, 
+              ttt_player.ADPlayer,
+              ttt_player.DRPlayer )
+  for idx,o in enumerate(options):
+    print("%d %s" % (idx, o.name))
+  p_class = []
+  for idx in range(0,2):
+    p_class.append(options[get_input(list(range(0,len(options))), "Select player %d: " % (idx+1))])
+  g = Game(p_class[0](Board.default_p1), p_class[1](Board.default_p2))
+  # If both players are machines, we want verbose==True so that
+  # we get board configurations printed to stdout
+  verb = p_class[0] != TerminalPlayer and p_class[1] != TerminalPlayer
+  g.start(verbose=verb)
   print(g)
   return 0
 
