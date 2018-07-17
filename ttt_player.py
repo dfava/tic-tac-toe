@@ -32,6 +32,9 @@ the player does not play defensively when it is about to lose.
     self.p = p
     if params != None: raise ValueError("Player does not take parameters.")
 
+  def start(self):
+    pass
+
   def play(self,b):
     stats = {}
     cs = b.get_children()
@@ -66,6 +69,9 @@ else, play randomly.
     self.p = p
     if params != None: raise ValueError("Player does not take parameters.")
 
+  def start(self):
+    pass
+
   def play(self,b):
     cs = b.get_children()
     # Must we need to defend now?
@@ -92,6 +98,9 @@ the largest number of winning descendants.
   def __init__(self, p, params=None):
     self.p = p
     if params != None: raise ValueError("Player does not take parameters.")
+
+  def start(self):
+    pass
 
   def play(self,b):
     stats = {}
@@ -140,7 +149,7 @@ class DRPlayer(ttt.AbsPlayer):
               {'valfun' : lambda v: float(v) if float(v) > 0 and float(v) <= 1 else int('raise value error'),
                'def' : 0.96,
                'msg' : 'Choose a discount reward rate in (0,1], default %.2f: ',
-               'errmsg' : 'Invalid rate.  Must be greater than 0 and less then or equal to 1.  Try again.'},
+               'errmsg' : 'Invalid rate.  Must be greater than 0 and less than or equal to 1.  Try again.'},
             'win':
               {'valfun' : lambda v: float(v),
                'def' : 1,
@@ -167,6 +176,9 @@ class DRPlayer(ttt.AbsPlayer):
     for param in params:
       self.params[param] = params[param]
     self.rewards = {}
+
+  def start(self):
+    pass
 
   def play(self, b):
     best_b = None
@@ -203,6 +215,59 @@ class DRPlayer(ttt.AbsPlayer):
 #   don't simulate the games, learn from playing.
 #   So the player's performance starts poor,
 #   and improves from playing against others.
+
+class RLPlayer(ttt.AbsPlayer):
+
+  name = "Reinforcement learning player"
+
+  # TODO: Think about having an adjustable learn rate, one that decreases with time
+  params = {'lr': 
+              {'valfun' : lambda v: float(v) if float(v) >= 0 and float(v) < 1 else int('raise value error'),
+               'def' : 0.05,
+               'msg' : 'Choose a learn rate in [0,1), default %.2f: ',
+               'errmsg' : 'Invalid rate.  Must be greater or equal to 0 and less than 1.  Try again.'},
+            }
+
+  def __init__(self, p, params={}):
+    self.p = p
+    self.params = {}
+    for param in DRPlayer.params:
+      self.params[param] = DRPlayer.params[param]['def'] # Set params to default
+    # If parameters have been passed to constructure, then override the parameter here
+    for param in params:
+      self.params[param] = params[param]
+    self.rewards = {}
+    self.prev_b = None
+
+  def start(self):
+    self.prev_b = None
+
+  # TODO: Sometimes don't pick the best play but a random one (exploration)
+  # TODO: If there is more than one "best option", randomly pick among them
+  def play(self, b):
+    best_b = None
+    best_reward = -float("inf")
+    cs = b.get_children()
+    for c in cs:
+      if c not in self.rewards:
+        if c.who_won() == self.p:
+          self.rewards[c] = 1.0
+        elif c.who_won() != None: # We lost
+          self.rewards[c] = 0.0
+        else:
+          self.rewards[c] = 0.5 # coin-toss
+      tmp = self.rewards[c]
+      if best_reward < tmp:
+        best_reward = tmp
+        best_b = c
+    assert(best_b != None)
+    if self.prev_b != None:
+      self.rewards[self.prev_b] += self.params['lr'] * (self.rewards[best_b] 
+                                    - self.rewards[self.prev_b])
+    self.prev_b = best_b
+    return get_play_from_parent_and_child(b,best_b)
+
+
 
 if __name__ == "__main__":
   #ap = APlayer(ttt.Board.default_p1)

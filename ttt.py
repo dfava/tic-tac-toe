@@ -153,12 +153,15 @@ class AbsPlayer(metaclass=abc.ABCMeta):
 
   @abc.abstractmethod
   def __init__(self, p, params):
-    raise NotImplementedError('Must first implement play() before using it')
+    raise NotImplementedError('Must first implement abstract methods before using it')
+
+  @abc.abstractmethod
+  def start(self):
+    raise NotImplementedError('Must first implement abstract methods before using it')
 
   @abc.abstractmethod
   def play(self, b):
-    raise NotImplementedError('Must first implement play() before using it')
-
+    raise NotImplementedError('Must first implement abstract methods before using it')
 
 def get_input(validate, default, message, err_message):
   '''Read inputs from the user:
@@ -185,6 +188,9 @@ class TerminalPlayer(AbsPlayer):
     self.p = p
     if params != None: raise ValueError("Player does not take parameters.")
 
+  def start(self):
+    pass
+
   def play(self, b):
     print(b)
     print('Player %s' % self.p)
@@ -199,6 +205,8 @@ class Game():
     self.ps = (p1,p2)
 
   def start(self, verbose=False):
+    self.ps[0].start()
+    self.ps[1].start()
     it = 0
     if verbose: print(self.b);print()
     while not self.b.is_over():
@@ -231,7 +239,8 @@ def main(argv):
               ttt_player.APlayer, 
               ttt_player.DPlayer, 
               ttt_player.ADPlayer,
-              ttt_player.DRPlayer )
+              ttt_player.DRPlayer,
+              ttt_player.RLPlayer )
   validate_func = lambda v: int(v) if int(v) in range(0,len(options)) else int('raise value error')
   for idx,o in enumerate(options):
     print("%d %s" % (idx, o.name))
